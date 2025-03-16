@@ -20,6 +20,9 @@ sequence = st.sidebar.text_area('Enter DNA/RNA/Protein sequence:', height=200)
 motif_input = st.sidebar.text_input('Enter motifs (comma-separated, supports regex):')
 mismatch_tolerance = st.sidebar.slider("Allowed mismatches:", 0, 3, 0)
 
+# Clean the input sequence (remove spaces, newlines, etc.)
+sequence = re.sub(r'\s+', '', sequence)  # Removes spaces, tabs, and newlines
+
 # Motif Colors
 motif_colors = ["#FF6347", "#FFD700", "#32CD32", "#1E90FF", "#FF69B4"]
 
