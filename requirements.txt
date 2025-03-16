@@ -1,7 +1,8 @@
 streamlit
-numpy
 pandas
 plotly
-biopython
 matplotlib
-seaborn
+fpdf
+dna-features-viewer
+fuzzysearch
+
