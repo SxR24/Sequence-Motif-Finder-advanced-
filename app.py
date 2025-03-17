@@ -18,7 +18,8 @@ st.set_page_config(page_title="Sequence Motif Finder", layout="wide")
 st.title('🔬 Advanced Sequence Motif Finder')
 
 # Sidebar Inputs
-st.sidebar.header('⚙️ Input Options')
+st.sidebar.header('⚙️ Input Sequence')
+st.sidebar.subheader('Upload fasta file or paste the sequence in the box')
 
 # File Uploader for FASTA Files
 uploaded_file = st.sidebar.file_uploader("Upload a FASTA file", type=["fasta", "fa"])
