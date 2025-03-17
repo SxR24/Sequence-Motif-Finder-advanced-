@@ -9,6 +9,8 @@ import matplotlib.pyplot as plt
 from dna_features_viewer import GraphicFeature, GraphicRecord
 from io import BytesIO
 from fpdf import FPDF
+from Bio import SeqIO
+import io
 
 # Streamlit Page Configuration
 st.set_page_config(page_title="Sequence Motif Finder", layout="wide")
@@ -16,11 +18,26 @@ st.title('🔬 Advanced Sequence Motif Finder')
 
 # Sidebar Inputs
 st.sidebar.header('⚙️ Input Options')
-sequence = st.sidebar.text_area('Enter DNA/RNA/Protein sequence:', height=200)
+
+# File Uploader for FASTA Files
+uploaded_file = st.sidebar.file_uploader("Upload a FASTA file", type=["fasta", "fa"])
+
+# Sequence Input Area
+sequence = ""
+if uploaded_file:
+    fasta_text = uploaded_file.getvalue().decode("utf-8")
+    fasta_io = io.StringIO(fasta_text)
+    for record in SeqIO.parse(fasta_io, "fasta"):
+        sequence += str(record.seq)  # Combine multiple sequences if present
+    st.sidebar.success(f"✅ Loaded sequence from {uploaded_file.name}")
+
+else:
+    sequence = st.sidebar.text_area('Enter DNA/RNA/Protein sequence:', height=200)
+
 motif_input = st.sidebar.text_input('Enter motifs (comma-separated, supports regex):')
 mismatch_tolerance = st.sidebar.slider("Allowed mismatches:", 0, 3, 0)
 
-# Clean the input sequence (remove spaces, newlines, etc.)
+# Clean input sequence
 sequence = re.sub(r'\s+', '', sequence)  # Removes spaces, tabs, and newlines
 
 # Motif Colors
@@ -29,14 +46,14 @@ motif_colors = ["#FF6347", "#FFD700", "#32CD32", "#1E90FF", "#FF69B4"]
 # Find Motifs Button
 if st.sidebar.button('🔍 Find Motifs'):
     if not sequence or not motif_input:
-        st.error('⚠️ Please enter both a sequence and motifs to search for.')
+        st.error('⚠️ Please enter a sequence and motifs to search for.')
     else:
         motifs = [m.strip() for m in motif_input.split(',')]
         matches_dict = {}
 
         # Find motifs in sequence
         for i, motif in enumerate(motifs):
-            color = motif_colors[i % len(motif_colors)]  
+            color = motif_colors[i % len(motif_colors)]
             if mismatch_tolerance == 0:
                 matches = [(m.start(), m.end(), motif) for m in re.finditer(motif, sequence)]
             else:
@@ -61,7 +78,7 @@ if st.sidebar.button('🔍 Find Motifs'):
             prev_index = index
         highlighted_sequence += sequence[prev_index:]
 
-        # Display scrollable sequence
+        # Display Scrollable Sequence View
         st.subheader("📜 Scrollable Sequence View")
         st.markdown(f"""
             <div style='overflow-x: auto; white-space: nowrap; font-family: monospace; font-size: 16px;'>
