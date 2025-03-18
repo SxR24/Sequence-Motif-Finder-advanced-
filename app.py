@@ -12,22 +12,21 @@ from io import BytesIO
 from fpdf import FPDF
 from Bio import SeqIO, Seq
 import io
-import numpy as np  # for interactive circular plot calculations
+import numpy as np
+import logomaker  # for sequence logo generation
 
 # Streamlit Page Configuration
 st.set_page_config(page_title="Sequence Motif Finder", layout="wide")
 st.title('🔬 Advanced Sequence Motif Finder')
 
 # Disclaimer below the title
-st.markdown("""
-### **Disclaimer:**
+st.subheader("""
+**Disclaimer:**
 This tool is currently under development and may produce minor errors.  
 Please verify the output carefully and cross-check with other tools if necessary.  
-If you notice any logical errors or have suggestions for improvements, feel free to mail me at
-<a href="mailto:sohilananth109@gmail.com?subject=Feedback%20for%20Advanced%20Sequence%20Motif%20Finder">sohilananth109@gmail.com</a> or reach me at <a href="https://github.com/SxR24">GitHub</a>.
-""", unsafe_allow_html=True)
-
-
+If you notice any logical errors or have suggestions for improvements, feel free to  
+email me at sohilananth109@gmail.com or reach me at my github https://github.com/SxR24 .
+""")
 
 # Sidebar Inputs
 st.sidebar.header('⚙️ Input Sequence')
@@ -226,8 +225,53 @@ if st.sidebar.button('🔍 Find Motifs'):
             sns.heatmap(co_matrix.corr(), annot=True, cmap='coolwarm', ax=ax)
             st.pyplot(fig_heat)
 
-            st.subheader("🏆 Sequence Logo Plot (Placeholder)")
-            st.write("Sequence Logo visualization will be added soon.")
+            st.subheader("🏆 Sequence Logo Plot")
+            # Collect logos in a list for grid display (2 per row)
+            logo_figures = []
+            for motif, data in matches_dict.items():
+                # Extract matched sequences for this motif
+                seqs = []
+                for start, end, _, strand in data['matches']:
+                    if strand == "+":
+                        seqs.append(sequence[start:end])
+                    else:
+                        seqs.append(str(Seq.Seq(sequence[start:end]).reverse_complement()))
+                st.markdown(f"**Sequence Logo for motif: {motif}**")
+                # Only generate a logo if there are at least 2 sequences and they are all of the same length.
+                if len(seqs) > 1 and len(set(len(s) for s in seqs)) == 1:
+                    # Create a count matrix from the alignment
+                    count_mat = logomaker.alignment_to_matrix(sequences=seqs, to_type='counts')
+                    # Create a smaller logo figure (e.g., 3 x 2 inches)
+                    fig_logo, ax = plt.subplots(figsize=(3, 2))
+                    logomaker.Logo(count_mat, ax=ax)
+                    ax.set_title(f"{motif}", fontsize=10)
+                    ax.set_xticks([])
+                    ax.set_yticks([])
+                    logo_figures.append(fig_logo)
+                else:
+                    st.write(f"Not enough matches for motif {motif} (or they are of varying lengths) to generate a sequence logo.")
+            
+            # Display logos in a grid: two per row
+            if logo_figures:
+                for i in range(0, len(logo_figures), 2):
+                    cols = st.columns(2)
+                    cols[0].pyplot(logo_figures[i])
+                    if i + 1 < len(logo_figures):
+                        cols[1].pyplot(logo_figures[i+1])
+            
+            # Note on how to use the sequence logo plot
+            st.markdown("""
+            **How to Use the Sequence Logo Plot:**
+
+            The sequence logo plot provides a visual summary of the variability in your motif matches.  
+            - **Letter Heights:** The height of each letter indicates its frequency at that position.  
+            - **Conservation:** Positions with tall stacks suggest high conservation and importance, while shorter stacks indicate variability.  
+            
+            **Example:**  
+            If your motif search returns variations of a binding site such as `ATGCGT`, `ATGAGT`, and `ATGCGT`,  
+            the sequence logo might show that the fourth position is variable (displaying both `C` and `A`),  
+            while the other positions remain largely conserved. This helps you identify which positions are critical for function.
+            """, unsafe_allow_html=True)
 
             # Interactive Circular Genome Visualization using Plotly polar chart
             st.subheader("🌀 Interactive Circular Genome Visualization")
