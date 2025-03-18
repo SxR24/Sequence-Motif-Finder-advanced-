@@ -23,7 +23,7 @@ st.markdown("""
 ### **Disclaimer:**
 This tool is currently under development and may produce minor errors.  
 Please verify the output carefully and cross-check with other tools if necessary.  
-If you notice any logical errors or have suggestions for improvements, feel free to  
+If you notice any logical errors or have suggestions for improvements, feel free to mail me at
 <a href="mailto:sohilananth109@gmail.com?subject=Feedback%20for%20Advanced%20Sequence%20Motif%20Finder">sohilananth109@gmail.com</a> or reach me at <a href="https://github.com/SxR24">GitHub</a>.
 """, unsafe_allow_html=True)
 
